@@ -43,22 +43,6 @@ export default class ListItem extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-.ml-auto {
-  margin-left: auto;
-}
-
-.ml-1 {
-  margin-left: 0.5rem;
-}
-
-.mr-1 {
-  margin-right: 0.5rem;
-}
-
-.mr-2 {
-  margin-right: 1.5rem;
-}
-
 .list-item {
   padding-left: 0;
   padding-right: 0;

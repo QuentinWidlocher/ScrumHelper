@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-content">
-      <h3 class="is-size-3">{{ title }}</h3>
+      <h3 class="has-text-weight-light is-size-3">{{ title }}</h3>
       <list-item
         :title="i"
         :displayPreviousArrow="displayPreviousArrow"
@@ -69,10 +69,6 @@ export default class Card extends Vue {
 <style lang="scss" scoped>
 h3 {
   margin-bottom: 1rem;
-}
-
-.is-full-width {
-  width: 100%;
 }
 
 .card-content {

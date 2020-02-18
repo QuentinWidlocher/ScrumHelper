@@ -1,13 +1,28 @@
 <template>
   <div id="App">
+    <header>
+      <h1 class="is-size-1 title-text">Scrum Helper</h1>
+      <h2 class="is-size-4 has-text-grey has-text-weight-light date">
+        {{ today.date.toLocaleDateString() }}
+      </h2>
+      <button @click="modal = true" class="button is-large is-hidden-touch ml-auto">
+        Get morning scrum
+      </button>
+      <button @click="modal = true" class="button is-large is-hidden-desktop is-fullwidth ml-auto">
+        Get morning scrum
+      </button>
+    </header>
+
+    <modal :show.sync="modal" :title="'Scrum of ' + today.date.toLocaleDateString()"> </modal>
+
     <div class="columns is-desktop">
-      <div class="column" v-for="(list, i) in lists" :key="list.name">
+      <div class="column" v-for="(list, i) in today.lists" :key="list.name">
         <card
           :title="list.title"
           :listName="list.name"
           :items="list.list"
           :displayPreviousArrow="i > 0"
-          :displayNextArrow="i < lists.length - 1"
+          :displayNextArrow="i < today.lists.length - 1"
           @next="next"
           @previous="previous"
           @add="add"
@@ -21,20 +36,29 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Card from './components/Card.vue';
+import Modal from './components/Modal.vue';
 import 'bulma/css/bulma.min.css';
+import List from './models/List';
+import Day from './models/Day';
 
 @Component({
   components: {
-    Card
+    Card,
+    Modal
   }
 })
 export default class App extends Vue {
-  lists = [
-    { name: 'todo', title: 'To do', list: [] },
-    { name: 'inProgress', title: 'In progress', list: [] },
-    { name: 'tomorrow', title: 'Tomorrow', list: [] },
-    { name: 'done', title: 'Done', list: [] }
-  ];
+  today: Day = {
+    date: new Date(),
+    lists: [
+      { name: 'todo', title: 'To do', list: [] },
+      { name: 'inProgress', title: 'In progress', list: [] },
+      { name: 'tomorrow', title: 'Tomorrow', list: [] },
+      { name: 'done', title: 'Done', list: [] }
+    ]
+  };
+
+  modal = false;
 
   next(listName: string, item: string) {
     const currentList = this.getList(listName, 0);
@@ -66,8 +90,8 @@ export default class App extends Vue {
   }
 
   private getList(name: string, index = 0): string[] | undefined {
-    const listIndex = this.lists.findIndex(list => list.name === name);
-    return this.lists[listIndex + index].list;
+    const listIndex = this.today.lists.findIndex((list: List) => list.name === name);
+    return this.today.lists[listIndex + index].list;
   }
 }
 </script>
@@ -77,5 +101,42 @@ export default class App extends Vue {
   margin-top: 1rem;
   padding-left: 1rem;
   padding-right: 1rem;
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+
+    margin-bottom: 2rem;
+
+    .title-text {
+      margin-right: 1rem;
+      margin-bottom: 0;
+    }
+
+    button.button.is-hidden-desktop {
+      margin-top: 1rem;
+    }
+  }
+}
+
+.is-full-width {
+  width: 100%;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.ml-1 {
+  margin-left: 0.5rem;
+}
+
+.mr-1 {
+  margin-right: 0.5rem;
+}
+
+.mr-2 {
+  margin-right: 1.5rem;
 }
 </style>
