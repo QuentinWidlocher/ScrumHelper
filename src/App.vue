@@ -2,9 +2,6 @@
   <div id="App">
     <header>
       <h1 class="is-size-1 title-text">Scrum Helper</h1>
-      <h2 class="is-size-4 has-text-grey has-text-weight-light date">
-        {{ today.date.toLocaleDateString() }}
-      </h2>
       <button @click="modal = true" class="button is-large is-hidden-touch ml-auto">
         Get morning scrum
       </button>
@@ -13,9 +10,18 @@
       </button>
     </header>
 
-    <modal :show.sync="modal" :title="'Scrum of ' + today.date.toLocaleDateString()"> </modal>
+    <modal v-if="today" :show.sync="modal" :title="'Scrum of ' + today.date.toLocaleDateString()">
+      <scrum-summary
+        :today="today"
+        :lastDay="lastDay"
+      />
+    </modal>
 
-    <div class="columns is-desktop">
+
+    <h2 class="is-size-4 has-text-grey has-text-weight-light date" v-if="today">
+      Today : {{ today.date.toLocaleDateString() }}
+    </h2>
+    <div class="columns is-desktop" v-if="today">
       <div class="column" v-for="(list, i) in today.lists" :key="list.name">
         <card
           :title="list.title"
@@ -30,6 +36,25 @@
         />
       </div>
     </div>
+
+    <h2 class="is-size-4 has-text-grey has-text-weight-light date" v-if="lastDay">
+      Last time : {{ lastDay.date.toLocaleDateString() }}
+    </h2>
+    <div class="columns is-desktop" v-if="lastDay">
+      <div class="column" v-for="(list, i) in lastDay.lists" :key="list.name">
+        <card
+          :title="list.title"
+          :listName="list.name"
+          :items="list.list"
+          :displayPreviousArrow="i > 0"
+          :displayNextArrow="i < lastDay.lists.length - 1"
+          @next="next"
+          @previous="previous"
+          @add="add"
+          @remove="remove"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -37,26 +62,21 @@
 import { Component, Vue } from 'vue-property-decorator';
 import Card from './components/Card.vue';
 import Modal from './components/Modal.vue';
+import ScrumSummary from './components/ScrumSummary.vue';
 import 'bulma/css/bulma.min.css';
 import List from './models/List';
 import Day from './models/Day';
+import { dayService } from "./services/DayService";
 
 @Component({
   components: {
     Card,
-    Modal
+    Modal,
+    ScrumSummary
   }
 })
 export default class App extends Vue {
-  today: Day = {
-    date: new Date(),
-    lists: [
-      { name: 'todo', title: 'To do', list: [] },
-      { name: 'inProgress', title: 'In progress', list: [] },
-      { name: 'tomorrow', title: 'Tomorrow', list: [] },
-      { name: 'done', title: 'Done', list: [] }
-    ]
-  };
+  days: Day[] = [];
 
   modal = false;
 
@@ -89,9 +109,33 @@ export default class App extends Vue {
     list?.splice(list.indexOf(item), 1);
   }
 
+  private mounted() {
+    this.days = dayService.savedDays;
+
+    console.log(this.today);
+    console.log(this.lastDay);
+
+    // If the last day is not today
+    if (!this.today || (this.today.date && this.today.date.toDateString() !== new Date(localStorage.getItem('today')!).toDateString())){
+      this.days.unshift(new Day(new Date(localStorage.getItem('today')!)))
+    }
+  }
+
+  private updated() {
+    dayService.savedDays = this.days;
+  }
+
   private getList(name: string, index = 0): string[] | undefined {
     const listIndex = this.today.lists.findIndex((list: List) => list.name === name);
     return this.today.lists[listIndex + index].list;
+  }
+
+  get today(): Day {
+    return this.days[0];
+  }
+
+  get lastDay(): Day | undefined {
+    return this.days[1];
   }
 }
 </script>

@@ -1,36 +1,68 @@
 <template>
   <div>
-    <h1 class="is-size-3">What I did yesterday</h1>
-    <ul>
-      <li v-for="task in done" :key="task">{{ task }}</li>
-    </ul>
+    <template v-if="done && done.length">
+      <h1 class="is-size-3">What I did last time</h1>
+      <ul>
+        <li v-for="task in done" :key="task">{{ task }}</li>
+      </ul>
+    </template>
 
-    <h1 class="is-size-3">What I will do today</h1>
-    <ul>
-      <li v-for="task in yesterdayDone" :key="task">{{ task }}</li>
-    </ul>
+    <template v-if="todo && todo.length">
+      <h1 class="is-size-3">What I will do today</h1>
+      <ul>
+        <li v-for="task in todo" :key="task">{{ task }}</li>
+      </ul>
+    </template>
   </div>
 </template>
 <script lang="ts">
-import { Component, Vue, Prop, PropSync } from 'vue-property-decorator';
+import { Component, Vue, Prop, PropSync, Watch } from 'vue-property-decorator';
 import Day from '@/models/Day';
 import List from '@/models/List';
 
 @Component({})
 export default class ScrumSummary extends Vue {
   @Prop({ default: {} }) today!: Day;
-  @Prop({ default: {} }) yesterday!: Day;
+  @Prop() lastDay?: Day;
 
-  get done() {
-    return this.yesterday.lists.find((list: List) => {
-      return list.name === 'done';
-    })?.list;
+  todo: string[] = [];
+  done: string[] = [];
+
+  @Watch('today', {deep: true})
+  @Watch('lastDay', {deep: true})
+  private loadSummary() {
+    this.todo = this.loadTodo();
+    this.done = this.loadDone();
   }
 
-  get todo() {
-    return this.yesterday.lists.find((list: List) => {
-      return list.name === 'todo';
-    })?.list;
+  private loadDone(): string[] {
+    if (!this.lastDay) return [];
+
+    return this.lastDay.lists.find((list: List) => {
+      return list.name === 'done';
+    })!.list;
+  }
+
+  private loadTodo(): string[] {
+
+    const todayTodo: string[] = this.today.lists.find((list: List) => {
+          return list.name === 'todo';
+    })?.list || [];    
+
+    let yesterdayTodo: string[] = [];
+    let yesterdayTomorrow: string[] = [];
+
+    if (this.lastDay) {
+      yesterdayTodo = this.lastDay.lists.find((list: List) => {
+          return list.name === 'todo';
+        })?.list || [];
+
+      yesterdayTomorrow = this.lastDay.lists.find((list: List) => {
+        return list.name === 'tomorrow';
+      })?.list || [];
+    }
+
+    return todayTodo.concat(yesterdayTodo, yesterdayTomorrow);
   }
 }
 </script>
