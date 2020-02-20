@@ -14,14 +14,11 @@ export class DayService {
   }
 
   createNewDay(): Day {
-    return new Day(new Date(localStorage.getItem('today')!));
+    return new Day(new Date());
   }
 
   isToday(date: Date): boolean {
-    return (
-      date.toISOString().split('T')[0] ===
-      new Date(localStorage.getItem('today')!).toISOString().split('T')[0]
-    );
+    return date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
   }
 }
 
