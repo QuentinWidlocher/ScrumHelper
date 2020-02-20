@@ -11,12 +11,8 @@
     </header>
 
     <modal v-if="today" :show.sync="modal" :title="'Scrum of ' + today.date.toLocaleDateString()">
-      <scrum-summary
-        :today="today"
-        :lastDay="lastDay"
-      />
+      <scrum-summary :today="today" :lastDay="lastDay" />
     </modal>
-
 
     <h2 class="is-size-4 has-text-grey has-text-weight-light date" v-if="today">
       Today : {{ today.date.toLocaleDateString() }}
@@ -66,7 +62,7 @@ import ScrumSummary from './components/ScrumSummary.vue';
 import 'bulma/css/bulma.min.css';
 import List from './models/List';
 import Day from './models/Day';
-import { dayService } from "./services/DayService";
+import { dayService } from './services/DayService';
 
 @Component({
   components: {
@@ -116,18 +112,59 @@ export default class App extends Vue {
     console.log(this.lastDay);
 
     // If the last day is not today
-    if (!this.today || (this.today.date && this.today.date.toDateString() !== new Date(localStorage.getItem('today')!).toDateString())){
-      this.days.unshift(new Day(new Date(localStorage.getItem('today')!)))
+    if (!this.today || (this.today.date && !this.isToday(this.today.date))) {
+      this.newDay();
     }
+  }
+
+  private newDay(): void {
+    this.days.unshift(this.createNewDay());
+
+    if (this.lastDay) {
+      console.debug('today before copy', this.today.lists[0].list[0]);
+      this.copyListFromLastDay('todo');
+      this.copyListFromLastDay('inProgress');
+      this.copyListFromLastDay('tomorrow', 'todo');
+      console.debug('today after copy', this.today.lists[0].list[0]);
+    }
+  }
+
+  private copyListFromLastDay(sourceName: string, targetName = sourceName) {
+    if (!this.lastDay || !this.today) return;
+
+    const source = this.getList(sourceName, 0, this.lastDay.lists);
+
+    if (!source) return;
+
+    const targetIndex = this.getListIndex(targetName, this.today.lists);
+
+    this.today.lists[targetIndex].list = this.today.lists[targetIndex].list.concat(source);
+  }
+
+  private createNewDay(): Day {
+    // TODO : Remove debug date falsification
+    return new Day(new Date(localStorage.getItem('today')!));
+  }
+
+  private isToday(date: Date): boolean {
+    // TODO : Remove debug date falsification
+    return date.toDateString() === new Date(localStorage.getItem('today')!).toDateString();
   }
 
   private updated() {
     dayService.savedDays = this.days;
   }
 
-  private getList(name: string, index = 0): string[] | undefined {
-    const listIndex = this.today.lists.findIndex((list: List) => list.name === name);
-    return this.today.lists[listIndex + index].list;
+  /**
+   * Return list by name, use index to get the next or the previous one
+   */
+  private getList(name: string, index = 0, lists: List[] = this.today.lists): string[] | undefined {
+    const listIndex = lists.findIndex((list: List) => list.name === name);
+    return lists[listIndex + index].list;
+  }
+
+  private getListIndex(name: string, lists: List[] = this.today.lists): number {
+    return lists.findIndex((list: List) => list.name === name);
   }
 
   get today(): Day {
