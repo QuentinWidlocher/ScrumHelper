@@ -9,7 +9,6 @@ module.exports = {
   },
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    'ban-types': 0
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
   }
 };

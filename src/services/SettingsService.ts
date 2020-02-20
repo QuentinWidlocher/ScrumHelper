@@ -38,10 +38,12 @@ export default class Setting {
     localStorage.setItem(this.name, this._value);
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   public get objectValue(): Object {
     return JSON.parse(this.value);
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   public set objectValue(value: Object) {
     this._value = JSON.stringify(value);
     localStorage.setItem(this.name, this._value);
