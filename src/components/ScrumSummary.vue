@@ -1,24 +1,37 @@
 <template>
-  <div>
-    <template v-if="done && done.length">
-      <h1 class="is-size-3">What I did last time</h1>
+  <div class="columns">
+    <div class="column" v-if="done && done.length">
+      <h1 class="is-size-4 has-text-weight-bold">What I did last time</h1>
       <ul>
-        <li v-for="task in done" :key="task">{{ task }}</li>
+        <li v-for="task in done" :key="task">• {{ task }}</li>
       </ul>
-    </template>
+    </div>
 
-    <template v-if="todo && todo.length">
-      <h1 class="is-size-3">What I will do today</h1>
-      <ul>
-        <li v-for="task in todo" :key="task">{{ task }}</li>
-      </ul>
-    </template>
+    <div class="column" v-if="(todo && todo.length) || (inProgress && inProgress.length)">
+      <h1 class="is-size-4 has-text-weight-bold">What I will do today</h1>
+
+      <div class="columns">
+        <div class="column">
+          <h2 class="is-size-5">I will first finish :</h2>
+          <ul>
+            <li v-for="task in inProgress" :key="task">• {{ task }}</li>
+          </ul>
+        </div>
+        <div class="column">
+          <h2 class="is-size-5">Then I will do :</h2>
+          <ul>
+            <li v-for="task in todo" :key="task">• {{ task }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script lang="ts">
-import { Component, Vue, Prop, PropSync, Watch } from 'vue-property-decorator';
+import { Component, Vue, Prop, Watch } from 'vue-property-decorator';
 import Day from '@/models/Day';
 import List from '@/models/List';
+import { listService } from '../services/ListService';
 
 @Component({})
 export default class ScrumSummary extends Vue {
@@ -27,43 +40,36 @@ export default class ScrumSummary extends Vue {
 
   todo: string[] = [];
   done: string[] = [];
+  inProgress: string[] = [];
 
-  @Watch('today', {deep: true})
-  @Watch('lastDay', {deep: true})
+  private mounted() {
+    this.loadSummary();
+  }
+
+  @Watch('today', { deep: true })
+  @Watch('lastDay', { deep: true })
   private loadSummary() {
     this.todo = this.loadTodo();
     this.done = this.loadDone();
+    this.inProgress = this.loadInProgress();
   }
 
   private loadDone(): string[] {
     if (!this.lastDay) return [];
-
-    return this.lastDay.lists.find((list: List) => {
-      return list.name === 'done';
-    })!.list;
+    return listService.getListByDay('done', this.lastDay) || [];
   }
 
   private loadTodo(): string[] {
+    return listService.getListByDay('todo', this.today) || [];
+  }
 
-    const todayTodo: string[] = this.today.lists.find((list: List) => {
-          return list.name === 'todo';
-    })?.list || [];    
-
-    let yesterdayTodo: string[] = [];
-    let yesterdayTomorrow: string[] = [];
-
-    if (this.lastDay) {
-      yesterdayTodo = this.lastDay.lists.find((list: List) => {
-          return list.name === 'todo';
-        })?.list || [];
-
-      yesterdayTomorrow = this.lastDay.lists.find((list: List) => {
-        return list.name === 'tomorrow';
-      })?.list || [];
-    }
-
-    return todayTodo.concat(yesterdayTodo, yesterdayTomorrow);
+  private loadInProgress(): string[] {
+    return listService.getListByDay('inProgress', this.today) || [];
   }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+h1 {
+  margin-bottom: 1rem;
+}
+</style>

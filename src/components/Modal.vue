@@ -24,4 +24,8 @@ export default class Modal extends Vue {
   @Prop({ default: '' }) title!: string;
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.modal-content {
+  min-width: 75%;
+}
+</style>

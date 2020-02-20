@@ -86,6 +86,7 @@ import 'bulma/css/bulma.min.css';
 import List from './models/List';
 import Day from './models/Day';
 import { dayService } from './services/DayService';
+import { listService } from './services/ListService';
 
 @Component({
   components: {
@@ -101,8 +102,8 @@ export default class App extends Vue {
   modal = false;
 
   next(listName: string, item: string) {
-    const currentList = this.getList(listName, 0);
-    const nextList = this.getList(listName, 1);
+    const currentList = listService.getListByDay(listName, this.today);
+    const nextList = listService.getListByDay(listName, this.today, 1);
 
     if (currentList && nextList) {
       currentList.splice(currentList.indexOf(item), 1);
@@ -111,8 +112,8 @@ export default class App extends Vue {
   }
 
   previous(listName: string, item: string) {
-    const currentList = this.getList(listName, 0);
-    const previousList = this.getList(listName, -1);
+    const currentList = listService.getListByDay(listName, this.today);
+    const previousList = listService.getListByDay(listName, this.today, -1);
 
     if (currentList && previousList) {
       currentList.splice(currentList.indexOf(item), 1);
@@ -121,19 +122,16 @@ export default class App extends Vue {
   }
 
   add(listName: string, item: string) {
-    this.getList(listName)?.push(item);
+    listService.getListByDay(listName, this.today)?.push(item);
   }
 
   remove(listName: string, item: string) {
-    const list = this.getList(listName);
+    const list = listService.getListByDay(listName, this.today);
     list?.splice(list.indexOf(item), 1);
   }
 
   private mounted() {
     this.days = dayService.savedDays;
-
-    console.log(this.today);
-    console.log(this.lastDay);
 
     // If the last day is not today
     if (!this.today || (this.today.date && !dayService.isToday(this.today.date))) {
@@ -156,29 +154,17 @@ export default class App extends Vue {
   private copyListFromLastDay(sourceName: string, targetName = sourceName) {
     if (!this.lastDay || !this.today) return;
 
-    const source = this.getList(sourceName, 0, this.lastDay.lists);
+    const source = listService.getListByDay(sourceName, this.lastDay);
 
     if (!source) return;
 
-    const targetIndex = this.getListIndex(targetName, this.today.lists);
+    const targetIndex = listService.getListIndexByDay(targetName, this.today);
 
     this.today.lists[targetIndex].list = this.today.lists[targetIndex].list.concat(source);
   }
 
   private updated() {
     dayService.savedDays = this.days;
-  }
-
-  /**
-   * Return list by name, use index to get the next or the previous one
-   */
-  private getList(name: string, index = 0, lists: List[] = this.today.lists): string[] | undefined {
-    const listIndex = lists.findIndex((list: List) => list.name === name);
-    return lists[listIndex + index].list;
-  }
-
-  private getListIndex(name: string, lists: List[] = this.today.lists): number {
-    return lists.findIndex((list: List) => list.name === name);
   }
 
   get today(): Day {

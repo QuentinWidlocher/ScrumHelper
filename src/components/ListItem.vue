@@ -3,10 +3,13 @@
     <button v-if="!readonly && displayLeftArrow" @click="previous" class="custom-button mr-1">
       <img :src="previousArrow" alt="arrow previous" />
     </button>
+
     <span>{{ title }}</span>
+
     <button v-if="!readonly" @click="remove" class="custom-button ml-auto mr-2">
       <img src="@/assets/trash.svg" alt="delete" />
     </button>
+
     <button v-if="!readonly && displayRightArrow" @click="next" class="custom-button">
       <img :src="nextArrow" alt="arrow next" />
     </button>
