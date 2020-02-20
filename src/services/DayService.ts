@@ -14,13 +14,11 @@ export class DayService {
   }
 
   createNewDay(): Day {
-    // TODO : Remove debug date falsification
-    return new Day(new Date(localStorage.getItem('today')!));
+    return new Day(new Date());
   }
 
   isToday(date: Date): boolean {
-    // TODO : Remove debug date falsification
-    return date.toDateString() === new Date(localStorage.getItem('today')!).toDateString();
+    return date.toDateString() === new Date().toDateString();
   }
 }
 

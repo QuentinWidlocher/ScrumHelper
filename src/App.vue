@@ -143,11 +143,9 @@ export default class App extends Vue {
     this.days.unshift(dayService.createNewDay());
 
     if (this.lastDay) {
-      console.debug('today before copy', this.today.lists[0].list[0]);
       this.copyListFromLastDay('todo');
       this.copyListFromLastDay('inProgress');
       this.copyListFromLastDay('tomorrow', 'todo');
-      console.debug('today after copy', this.today.lists[0].list[0]);
     }
   }
 
