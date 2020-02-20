@@ -1,13 +1,13 @@
 <template>
   <div class="list-item is-flex">
-    <button v-if="displayLeftArrow" @click="previous" class="custom-button mr-1">
+    <button v-if="!readonly && displayLeftArrow" @click="previous" class="custom-button mr-1">
       <img :src="previousArrow" alt="arrow previous" />
     </button>
     <span>{{ title }}</span>
-    <button @click="remove" class="custom-button ml-auto mr-2">
+    <button v-if="!readonly" @click="remove" class="custom-button ml-auto mr-2">
       <img src="@/assets/trash.svg" alt="delete" />
     </button>
-    <button v-if="displayRightArrow" @click="next" class="custom-button">
+    <button v-if="!readonly && displayRightArrow" @click="next" class="custom-button">
       <img :src="nextArrow" alt="arrow next" />
     </button>
   </div>
@@ -20,6 +20,7 @@ export default class ListItem extends Vue {
   @Prop({ default: '' }) title!: string;
   @Prop({ default: true }) displayLeftArrow!: boolean;
   @Prop({ default: true }) displayRightArrow!: boolean;
+  @Prop({ default: false }) readonly!: boolean;
 
   next() {
     this.$emit('next');

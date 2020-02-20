@@ -18,7 +18,7 @@
       Today : {{ today.date.toLocaleDateString() }}
     </h2>
     <div class="columns is-desktop" v-if="today">
-      <div class="column" v-for="(list, i) in today.lists" :key="list.name">
+      <div class="column" v-for="(list, i) in today.lists" :key="`today-${list.name}`">
         <card
           :title="list.title"
           :listName="list.name"
@@ -37,13 +37,14 @@
       Last time : {{ lastDay.date.toLocaleDateString() }}
     </h2>
     <div class="columns is-desktop" v-if="lastDay">
-      <div class="column" v-for="(list, i) in lastDay.lists" :key="list.name">
+      <div class="column" v-for="(list, i) in lastDay.lists" :key="`lastDay-${list.name}`">
         <card
           :title="list.title"
           :listName="list.name"
           :items="list.list"
           :displayPreviousArrow="i > 0"
           :displayNextArrow="i < lastDay.lists.length - 1"
+          readonly
           @next="next"
           @previous="previous"
           @add="add"
@@ -51,6 +52,27 @@
         />
       </div>
     </div>
+
+    <template v-for="(day, i) in days">
+      <panel v-if="i > 1" :key="`day-${i}-${day.date}`" :title="day.date.toLocaleDateString()">
+        <div class="columns is-desktop">
+          <div class="column" v-for="(list, j) in day.lists" :key="`list-${j}-${list.name}`">
+            <card
+              :title="list.title"
+              :listName="list.name"
+              :items="list.list"
+              :displayPreviousArrow="i > 0"
+              :displayNextArrow="i < day.lists.length - 1"
+              readonly
+              @next="next"
+              @previous="previous"
+              @add="add"
+              @remove="remove"
+            />
+          </div>
+        </div>
+      </panel>
+    </template>
   </div>
 </template>
 
@@ -59,6 +81,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import Card from './components/Card.vue';
 import Modal from './components/Modal.vue';
 import ScrumSummary from './components/ScrumSummary.vue';
+import Panel from './components/Panel.vue';
 import 'bulma/css/bulma.min.css';
 import List from './models/List';
 import Day from './models/Day';
@@ -68,7 +91,8 @@ import { dayService } from './services/DayService';
   components: {
     Card,
     Modal,
-    ScrumSummary
+    ScrumSummary,
+    Panel
   }
 })
 export default class App extends Vue {
@@ -112,13 +136,13 @@ export default class App extends Vue {
     console.log(this.lastDay);
 
     // If the last day is not today
-    if (!this.today || (this.today.date && !this.isToday(this.today.date))) {
+    if (!this.today || (this.today.date && !dayService.isToday(this.today.date))) {
       this.newDay();
     }
   }
 
   private newDay(): void {
-    this.days.unshift(this.createNewDay());
+    this.days.unshift(dayService.createNewDay());
 
     if (this.lastDay) {
       console.debug('today before copy', this.today.lists[0].list[0]);
@@ -139,16 +163,6 @@ export default class App extends Vue {
     const targetIndex = this.getListIndex(targetName, this.today.lists);
 
     this.today.lists[targetIndex].list = this.today.lists[targetIndex].list.concat(source);
-  }
-
-  private createNewDay(): Day {
-    // TODO : Remove debug date falsification
-    return new Day(new Date(localStorage.getItem('today')!));
-  }
-
-  private isToday(date: Date): boolean {
-    // TODO : Remove debug date falsification
-    return date.toDateString() === new Date(localStorage.getItem('today')!).toDateString();
   }
 
   private updated() {

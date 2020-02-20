@@ -6,6 +6,7 @@
         :title="i"
         :displayPreviousArrow="displayPreviousArrow"
         :displayNextArrow="displayNextArrow"
+        :readonly="readonly"
         @next="next(i)"
         @previous="previous(i)"
         @remove="remove(i)"
@@ -13,7 +14,7 @@
         :key="`${idx}-${i}`"
       />
 
-      <div class="list-item is-flex">
+      <div v-if="!readonly" class="list-item is-flex">
         <div class="field is-full-width has-addons">
           <input
             v-model="newItem"
@@ -41,6 +42,7 @@ export default class Card extends Vue {
   @Prop({ default: '' }) listName!: string;
   @Prop({ default: true }) displayPreviousArrow!: boolean;
   @Prop({ default: true }) displayNextArrow!: boolean;
+  @Prop({ default: false, type: Boolean }) readonly!: boolean;
 
   newItem = '';
 
