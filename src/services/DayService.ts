@@ -18,7 +18,7 @@ export class DayService {
   }
 
   isToday(date: Date): boolean {
-    return date.toDateString() === new Date().toDateString();
+    return date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
   }
 }
 
