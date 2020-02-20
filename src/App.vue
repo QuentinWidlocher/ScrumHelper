@@ -178,6 +178,16 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss">
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+  width: 100%;
+
+  // Cool milky color
+  background-color: #fefcfa;
+  opacity: 0.9;
+}
+
 #App {
   margin-top: 1rem;
   padding-left: 1rem;
@@ -198,6 +208,10 @@ export default class App extends Vue {
     button.button.is-hidden-desktop {
       margin-top: 1rem;
     }
+  }
+
+  .date {
+    margin-bottom: 1rem;
   }
 }
 
